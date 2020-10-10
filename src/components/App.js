@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { constructMatrixFromTemplate } from "functional-game-utils";
+import {
+  compareLocations,
+  updateMatrix,
+  constructMatrixFromTemplate,
+} from "functional-game-utils";
 import styled, { createGlobalStyle } from "styled-components";
 import "normalize.css";
 
-import useHover from "../hooks/useHover";
 import Grid from "./Grid";
 
 const GlobalStyles = createGlobalStyle`
@@ -11,7 +14,8 @@ const GlobalStyles = createGlobalStyle`
 `;
 
 const TileStyles = styled.div`
-  background-color: ${(props) => (props.hovered ? "lightyellow" : "lightblue")};
+  background-color: ${(props) =>
+    props.selected ? "lightpink" : props.hovered ? "lightyellow" : "lightblue"};
   border: 1px solid blue;
 
   height: 100%;
@@ -24,8 +28,27 @@ const TileStyles = styled.div`
   font-size: 32px;
 `;
 
-const Tile = ({ children, hovered }) => {
-  return <TileStyles hovered={hovered}>{children}</TileStyles>;
+const Tile = ({ children, hovered, selected, onClick }) => {
+  return (
+    <TileStyles selected={selected} hovered={hovered} onClick={onClick}>
+      {children}
+    </TileStyles>
+  );
+};
+
+const TileObjectStyles = styled.div`
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;
+`;
+
+const TileObject = ({ children, onClick }) => {
+  return <TileObjectStyles onClick={onClick}>{children}</TileObjectStyles>;
 };
 
 const App = () => {
@@ -35,6 +58,10 @@ const App = () => {
     tileHeight: 64,
   });
   const [pieces, setPieces] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState({
+    row: -1,
+    col: -1,
+  });
 
   useEffect(() => {
     const defaultPieces = [];
@@ -65,11 +92,23 @@ const App = () => {
         <Grid
           tiles={tiles}
           objects={pieces}
-          renderTile={({ tile, hovered }) => (
-            <Tile hovered={hovered}>{tile}</Tile>
-          )}
-          renderObject={({ object }) => (
-            <div onClick={() => alert(object)}>{object}</div>
+          renderTile={({ tile, location, hovered }) => {
+            return (
+              <Tile
+                onClick={() => {
+                  setPieces([...pieces, { object: "x", location }]);
+                }}
+                selected={compareLocations(location, selectedLocation)}
+                hovered={hovered}
+              >
+                {tile}
+              </Tile>
+            );
+          }}
+          renderObject={({ object, location }) => (
+            <TileObject onClick={() => setSelectedLocation(location)}>
+              {object}
+            </TileObject>
           )}
           options={options}
         />
