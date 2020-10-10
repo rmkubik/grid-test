@@ -4,6 +4,7 @@ import {
   mapMatrix,
   compareLocations,
 } from "functional-game-utils";
+import useHover from "../hooks/useHover";
 
 function getObjectAtLocation(objects, targetLocation) {
   const foundTarget = objects.find(({ location }) =>
@@ -34,6 +35,8 @@ const TileLayer = ({ children }) => {
 };
 
 const Tile = ({ children, tileWidth, tileHeight }) => {
+  const [hovered, hoverHandlers] = useHover();
+
   return (
     <div
       style={{
@@ -41,8 +44,9 @@ const Tile = ({ children, tileWidth, tileHeight }) => {
         height: tileHeight,
         position: "relative",
       }}
+      {...hoverHandlers}
     >
-      {children}
+      {children(hovered)}
     </div>
   );
 };
@@ -75,9 +79,19 @@ const Grid = ({
         tileWidth={effectiveTileWidth}
         tileHeight={effectiveTileHeight}
       >
-        {<TileLayer>{renderTile(tile, location, tiles)}</TileLayer>}
-        {object && (
-          <TileLayer>{renderObject(object, location, objects)}</TileLayer>
+        {(hovered) => (
+          <>
+            {
+              <TileLayer>
+                {renderTile({ tile, location, tiles, hovered })}
+              </TileLayer>
+            }
+            {object && (
+              <TileLayer>
+                {renderObject({ object, location, objects, hovered })}
+              </TileLayer>
+            )}
+          </>
         )}
       </Tile>
     );
