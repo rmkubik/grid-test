@@ -1,19 +1,10 @@
 import ReactDOM from "react-dom";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   getDimensions,
   mapMatrix,
   constructMatrixFromTemplate,
 } from "functional-game-utils";
-
-const defaultTiles = constructMatrixFromTemplate(
-  (char) => char,
-  `. . . .
-   . . . .
-   . . . .
-   . . . .
-    `
-);
 
 const Tile = ({ children, tileWidth, tileHeight }) => {
   return (
@@ -30,9 +21,15 @@ const Tile = ({ children, tileWidth, tileHeight }) => {
 
 const Grid = ({ tiles, renderTile, tileWidth, tileHeight }) => {
   const dimensions = getDimensions(tiles);
-  const renderTiles = mapMatrix(renderTile);
-
-  console.log(`${tileWidth}px`.repeat(dimensions.width));
+  const renderTiles = mapMatrix((tile, location, tiles) => (
+    <Tile
+      key={JSON.stringify(location)}
+      tileWidth={tileWidth}
+      tileHeight={tileHeight}
+    >
+      {renderTile(tile, location, tiles)}
+    </Tile>
+  ));
 
   return (
     <div
@@ -47,24 +44,29 @@ const Grid = ({ tiles, renderTile, tileWidth, tileHeight }) => {
 };
 
 const App = () => {
-  const [tiles, setTiles] = useState(defaultTiles);
+  const [tiles, setTiles] = useState();
   const [options, setOptions] = useState({
     tileWidth: 32,
     tileHeight: 32,
   });
 
+  useEffect(() => {
+    const defaultTiles = constructMatrixFromTemplate(
+      (char) => char,
+      `. . . .
+         . . . .
+         . . . .
+         . . x .
+          `
+    );
+
+    setTiles(defaultTiles);
+  }, []);
+
   return (
     <>
       <h1>Hello world!</h1>
-      <Grid
-        tiles={tiles}
-        renderTile={(tile, location) => (
-          <Tile key={JSON.stringify(location)} {...options}>
-            {tile}
-          </Tile>
-        )}
-        {...options}
-      />
+      {tiles && <Grid tiles={tiles} renderTile={(tile) => tile} {...options} />}
     </>
   );
 };
