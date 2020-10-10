@@ -20,7 +20,7 @@ const Tile = styled.div`
   align-items: center;
   justify-content: center;
 
-  font-size: 64px;
+  font-size: 32px;
 
   &:hover {
     background-color: lightyellow;
@@ -31,20 +31,31 @@ const Tile = styled.div`
 const App = () => {
   const [tiles, setTiles] = useState();
   const [options, setOptions] = useState({
-    tileWidth: "25vw",
-    tileHeight: "25vh",
+    tileWidth: 64,
+    tileHeight: 64,
   });
+  const [pieces, setPieces] = useState([]);
 
   useEffect(() => {
+    const defaultPieces = [];
     const defaultTiles = constructMatrixFromTemplate(
-      (char) => char,
-      `. . . .
-         . . . .
-         . . . .
-         . . x .
-        `
+      (char, location) => {
+        if (char === "x") {
+          defaultPieces.push({ object: char, location });
+        }
+
+        return "";
+      },
+      `. . . . . .
+       . . . . . .
+       . . . . . .
+       . . x . . .
+       . . . . . .
+       . . . . . .
+      `
     );
 
+    setPieces(defaultPieces);
     setTiles(defaultTiles);
   }, []);
 
@@ -53,7 +64,11 @@ const App = () => {
       {tiles && (
         <Grid
           tiles={tiles}
+          objects={pieces}
           renderTile={(tile) => <Tile>{tile}</Tile>}
+          renderObject={(object) => (
+            <div onClick={() => alert(object)}>{object}</div>
+          )}
           options={options}
         />
       )}

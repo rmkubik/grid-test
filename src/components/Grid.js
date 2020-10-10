@@ -1,5 +1,37 @@
 import React from "react";
-import { getDimensions, mapMatrix } from "functional-game-utils";
+import {
+  getDimensions,
+  mapMatrix,
+  compareLocations,
+} from "functional-game-utils";
+
+function getObjectAtLocation(objects, targetLocation) {
+  const foundTarget = objects.find(({ location }) =>
+    compareLocations(location, targetLocation)
+  );
+
+  if (!foundTarget) {
+    return undefined;
+  }
+
+  return foundTarget.object;
+}
+
+const TileLayer = ({ children }) => {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "0",
+        left: "0",
+        right: "0",
+        bottom: "0",
+      }}
+    >
+      {children}
+    </div>
+  );
+};
 
 const Tile = ({ children, tileWidth, tileHeight }) => {
   return (
@@ -7,6 +39,7 @@ const Tile = ({ children, tileWidth, tileHeight }) => {
       style={{
         width: tileWidth,
         height: tileHeight,
+        position: "relative",
       }}
     >
       {children}
@@ -16,7 +49,9 @@ const Tile = ({ children, tileWidth, tileHeight }) => {
 
 const Grid = ({
   tiles,
+  objects,
   renderTile,
+  renderObject,
   options: { tileWidth, tileHeight } = {},
 }) => {
   let effectiveTileWidth = tileWidth;
@@ -31,15 +66,22 @@ const Grid = ({
   }
 
   const dimensions = getDimensions(tiles);
-  const renderTiles = mapMatrix((tile, location, tiles) => (
-    <Tile
-      key={JSON.stringify(location)}
-      tileWidth={effectiveTileWidth}
-      tileHeight={effectiveTileHeight}
-    >
-      {renderTile(tile, location, tiles)}
-    </Tile>
-  ));
+  const renderTiles = mapMatrix((tile, location, tiles) => {
+    const object = getObjectAtLocation(objects, location);
+
+    return (
+      <Tile
+        key={JSON.stringify(location)}
+        tileWidth={effectiveTileWidth}
+        tileHeight={effectiveTileHeight}
+      >
+        {<TileLayer>{renderTile(tile, location, tiles)}</TileLayer>}
+        {object && (
+          <TileLayer>{renderObject(object, location, objects)}</TileLayer>
+        )}
+      </Tile>
+    );
+  });
 
   return (
     <div
