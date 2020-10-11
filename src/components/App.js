@@ -105,11 +105,13 @@ const App = () => {
               </Tile>
             );
           }}
-          renderObject={({ object, location }) => (
-            <TileObject onClick={() => setSelectedLocation(location)}>
-              {object}
-            </TileObject>
-          )}
+          renderObject={({ object, location }) => {
+            return (
+              <TileObject onClick={() => setSelectedLocation(location)}>
+                {object}
+              </TileObject>
+            );
+          }}
           options={options}
         />
       )}
