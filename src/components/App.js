@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   compareLocations,
   updateMatrix,
@@ -6,6 +6,11 @@ import {
 } from "functional-game-utils";
 import styled, { createGlobalStyle } from "styled-components";
 import "normalize.css";
+import gsap, { TweenMax } from "gsap";
+import useGsapToggle, {
+  useAnimation,
+  useTweenedState,
+} from "../hooks/useGsapToggle";
 
 import Grid from "./Grid";
 
@@ -15,7 +20,7 @@ const GlobalStyles = createGlobalStyle`
 
 const TileStyles = styled.div`
   background-color: ${(props) =>
-    props.selected ? "lightpink" : props.hovered ? "lightyellow" : "lightblue"};
+    props.selected ? "#FFB6C1" : props.hovered ? "lightyellow" : "lightblue"};
   border: 1px solid blue;
 
   height: 100%;
@@ -29,8 +34,42 @@ const TileStyles = styled.div`
 `;
 
 const Tile = ({ children, hovered, selected, onClick }) => {
+  // const [ref, currentlySelected, animate] = useTweenedState(false, {
+  //   backgroundColor: "#FFB6C1",
+  //   ease: "power4.inOut",
+  // });
+  const ref = useRef();
+  const [currentlySelected, setCurrentlySelected] = useState(false);
+  const animateSelect = useAnimation(ref, {
+    backgroundColor: "#FFB6C1",
+    ease: "power4.inOut",
+  });
+  const animateDeSelect = useAnimation(ref, {
+    backgroundColor: "#ADD8E6",
+    ease: "power4.inOut",
+  });
+
+  console.log(selected, currentlySelected);
+
+  useEffect(() => {
+    if (selected === currentlySelected) {
+      return;
+    }
+
+    if (selected) {
+      animateSelect(() => setCurrentlySelected(selected));
+    } else {
+      animateDeSelect(() => setCurrentlySelected(selected));
+    }
+  }, [selected, setCurrentlySelected]);
+
   return (
-    <TileStyles selected={selected} hovered={hovered} onClick={onClick}>
+    <TileStyles
+      ref={ref}
+      selected={currentlySelected}
+      hovered={hovered}
+      onClick={onClick}
+    >
       {children}
     </TileStyles>
   );
@@ -62,6 +101,11 @@ const App = () => {
     row: -1,
     col: -1,
   });
+  const [ref, tweenedText, animate] = useTweenedState("starter text", {
+    // scaleX: 2,
+    x: 200,
+    ease: "power4.inOut", // "elastic.inOut(1, 1)",
+  });
 
   useEffect(() => {
     const defaultPieces = [];
@@ -88,6 +132,13 @@ const App = () => {
 
   return (
     <>
+      <h1
+        style={{ display: "inline-block" }}
+        ref={ref}
+        onClick={() => animate("new text")}
+      >
+        {tweenedText}
+      </h1>
       {tiles && (
         <Grid
           tiles={tiles}
